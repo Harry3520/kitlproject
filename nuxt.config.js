@@ -42,16 +42,24 @@ export default {
    ** Nuxt.js modules
    */
   // Doc: https://axios.nuxtjs.org/usage
-  modules,
+  modules: ['@nuxtjs/axios'],
   /*
    ** Axios module configuration
    ** See https://axios.nuxtjs.org/options
    */
-  axios,
+  axios: {
+    baseURL: 'http://localhost:3000',
+    headers: {
+      common: {
+        'Authorization': 'Token 34282c5240d79fc1ff5015e4d805914b144681fc'
+      }
+    }
+  },
   /*
    ** Build configuration
    */
   build,
   toast,
-  proxy
+  proxy,
+
 };
