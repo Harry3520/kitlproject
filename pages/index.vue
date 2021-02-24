@@ -60,6 +60,7 @@
               src="assets/storybook/Home/imageA.jpg"
               :width="486"
               :height="486"
+              alt="alt"
             >
               katherina_trn
             </SfImage>
@@ -69,6 +70,7 @@
               src="assets/storybook/Home/imageB.jpg"
               :width="486"
               :height="486"
+              alt="alt"
             >
               katherina_trn
             </SfImage>
@@ -80,6 +82,7 @@
               src="assets/storybook/Home/imageC.jpg"
               :width="486"
               :height="486"
+              alt="alt"
             >
               katherina_trn
             </SfImage>
@@ -89,6 +92,7 @@
               src="assets/storybook/Home/imageD.jpg"
               :width="486"
               :height="486"
+              alt="alt"
             >
               katherina_trn
             </SfImage>

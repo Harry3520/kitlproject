@@ -1,29 +1,28 @@
 <template>
   <div>
-    <LayoutDefaultHeader :menu="Item"/>
+    <LayoutDefaultHeader :menu="menu"/>
     <nuxt />
   </div>
 </template>
 
 <script>
 import LayoutDefaultHeader from '@/components/LayoutDefaultHeader';
-import { mapState, mapActions } from 'vuex';
-
+import { mapGetters, mapActions, mapState } from 'vuex';
 export default {
   components: {
-    LayoutDefaultHeader
+    LayoutDefaultHeader,
   },
-
   computed: {
-    ...mapState('master', {
-      Item: (state) => state.menu
-    }),
+    ...mapState('master', ['menu','isLoading']),
   },
-
   mounted() {
-    this.$store.dispatch('master/getData');
+    this.getData();
   },
-
+  methods: {
+    ...mapActions({
+      getData: 'master/getData'
+    })
+  }
 };
 </script>
 <style src="~/assets/sass/layouts/default.scss" lang="scss"></style>

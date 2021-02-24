@@ -1,5 +1,6 @@
 <template>
   <div>
+    <Loader :loading="isLoading" />
     <SfSidebar
       class="sf-sidebar--right"
       title="My Cart"
@@ -8,46 +9,46 @@
       :visible="sidebar"
       @close="handleClickOnCloseBtnCart()"
     >
-      <SfCollectedProduct v-for="item in detail" :key="item.product.id"
-      :image="item.product.image"
+      <SfCollectedProduct v-for="item in detail" :key="item.id"
       :imageWidth="140"
       :imageHeight="200"
       :title="item.product.name"
       :regularPrice="item.product.id"
       @click:remove="removeFromCart(current, item)"
-      v-model="addToCartQty"
+      @input="increaseQuantity(item, $event)"
+      :qty="item.quantity"
       />
-      Total items: {{ count }}
+      Total items: {{ totalitems }}
       <template #content-bottom>
         <transition name="fade">
           <div>
-            <SfProperty class="sf-property--full-width my-carttotal-price">
+            <SfProperty class="sf-property--full-width my-cart__total-price">{{cartdetails}}
               <template #name>
-                <span class="sf-propertyname">Subtotal</span>
+                <span class="sf-property__name">Subtotal</span>
               </template>
               <template #value>
                 <SfPrice :regular="cartdetails.sub_amount" />
               </template>
             </SfProperty>
-            <SfProperty class="sf-property--full-width my-carttotal-price">
+            <SfProperty class="sf-property--full-width my-cart__total-price">{{cartdetails}}
               <template #name>
-                <span class="sf-propertyname">Shipping & Handling</span>
+                <span class="sf-property__name">Shipping & Handling</span>
               </template>
               <template #value>
                 <SfPrice :regular="cartdetails.discount" />
               </template>
             </SfProperty>
-            <SfProperty class="sf-property--full-width my-carttotal-price">
+            <SfProperty class="sf-property--full-width my-cart__total-price">{{cartdetails}}
               <template #name>
-                <span class="sf-propertyname">Tax</span>
+                <span class="sf-property__name">Tax</span>
               </template>
               <template #value>
                 <SfPrice :regular="cartdetails.tax_amount" />
               </template>
             </SfProperty>
-            <SfProperty class="sf-property--full-width my-carttotal-price">
+            <SfProperty class="sf-property--full-width my-cart__total-price">{{cartdetails}}
               <template #name>
-                <span class="sf-propertyname">Grand Total</span>
+                <span class="sf-property__name">Grand Total</span>
               </template>
               <template #value>
                 <SfPrice :regular="cartdetails.total" />
@@ -60,26 +61,17 @@
         </transition>
     </template>
     </SfSidebar>
-    <SfHeader
+      <SfHeader
         title="BCVueNuxt"
-        :cartItemsQty="count.toString()"
+        :cartItemsQty="totalitems.toString()"
         @click:cart="handleClickOnCart()"
-    >
+      >
+      <div class="sf-badge--number sf-badge">90</div>
       <template #navigation>
-        <SfHeaderNavigationItem v-for="item in menu" :key="item.link">
+        <SfHeaderNavigationItem v-for="item in menu" :key="item.id">
           <template slot="desktop-navigation-item">
-            <nuxt-link :to="`/${item.name}/${item.id}`">
+            <nuxt-link :to="`/${item.name}/?id=${item.id}`">
               {{ item.name }}
-            <!-- <SfLink
-              :link="item.name"
-              :style="{
-                outline: 'none',
-                display: 'inline-block',
-                'white-space': 'nowrap'
-              }"
-            >
-              {{ item.name }}
-            </SfLink> -->
             </nuxt-link>
           </template>
         </SfHeaderNavigationItem>
@@ -89,52 +81,44 @@
 </template>
 
 <script>
-import { SfProperty, SfHeader, SfLink, SfCollectedProduct, SfSidebar, SfButton, SfPrice } from '@storefront-ui/vue';
-import { mapState, mapGetters, mapActions } from 'vuex';
+import {SfBadge, SfHeader, SfLink, SfCollectedProduct, SfSidebar, SfProperty, SfButton, SfPrice } from '@storefront-ui/vue';
+import Loader from '@/components/Loader'
+import { mapState } from 'vuex';
 
 export default {
   name: 'Home',
   components: {
     SfHeader,
     SfLink,
+    SfBadge,
+    SfCollectedProduct,
+    SfSidebar,
     SfProperty,
+    Loader,
     SfButton,
     SfPrice,
-    SfCollectedProduct,
-    SfSidebar
   },
-
   data() {
     return {
+      details: [],
       addToCartQty: 1,
     };
   },
-  props: {
-    menu: {
-      type: Array,
-      default() {
-        return [];
-      }
-    }
+  mounted() {
+    this.$store.dispatch('carts/updateCart');
   },
-
   computed: {
     ...mapState('carts', {
       detail: (state) => state.cart
     }),
-    ...mapState('carts', ['current','sidebar','count','cartdetails']),
+    ...mapState('master', ['sidebar','menu']),
+    ...mapState('carts', ['totalitems', 'cartdetails','current', 'isLoading']),
   },
-
-  mounted() {
-    console.log("pal")
-    this.$store.dispatch('carts/updateCart');
-  },
-
   methods: {
     removeFromCart(current, item) {
       console.log('hghv',current)
-      this.$store.dispatch('carts/removeProductFromCart', {item, current});
-      //this.$store.dispatch('carts/checkCart', current);
+      this.$store.dispatch('carts/Removefromcart', {item, current});
+      //this.$store.dispatch('carts/checkCart', current)
     },
     /*handleClickCart() {
       this.$router.push({ name: 'cart' });
@@ -143,17 +127,23 @@ export default {
       this.$router.push({ name: 'login' });
     },*/
     handleClickOnCart() {
-      this.$store.dispatch('carts/openSidebar');
+      this.$store.dispatch('master/openSidebar');
     },
     handleClickOnCloseBtnCart() {
-      this.$store.dispatch('carts/closeSidebar');
+      this.$store.dispatch('master/closeSidebar');
     },
+    increaseQuantity(item, quantity) {
+      console.log("s",item.id)
+      console.log("h",quantity)
+      if(quantity >= 1) {
+        this.$store.dispatch('carts/addProductToCart', { product: { id: item.product.id, qty: (quantity - item.quantity) } })
+      }
+    }
   }
 };
 </script>
 
 <style scoped lang="scss">
-
 .my-cart {
   flex: 1;
   display: flex;
@@ -164,5 +154,4 @@ export default {
     margin: 0 0 var(--spacer-xs) 0;
   }
 }
-
 </style>
